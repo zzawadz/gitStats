@@ -1,0 +1,56 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# gitStats
+
+The goal of gitStats is to provide better git statistics about lines added/removed in git projects.
+
+## Installation
+
+You can install gitStats from github with:
+
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("zzawadz/gitStats")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(dplyr)
+library(tidyr)
+
+path <- "/tmp/dplyr/"
+
+if(!file.exists(path)) {
+  git2r::clone("git@github.com:tidyverse/dplyr.git", local_path = path)
+}
+
+data <- gstat_gather_data(path)
+
+authors <- unique(data[["Author"]])
+romain <- authors[grep(unique(authors), pattern = "^Romain")]
+hadley <- authors[grep(unique(authors), pattern = "adl")]
+
+authosrRenameMap <- setNames(rep(romain[2], length(romain)), romain)
+authosrRenameMap <- c(authosrRenameMap, "hadley" = "Hadley Wickham")
+dtCleanAuthors <- gstat_rename_authors(data, authosrRenameMap)
+
+dtCleanAuthors %>% 
+  group_by(Author) %>% 
+  summarise(Added = sum(Added), Removed = sum(Removed)) %>%
+  arrange(desc(Added))
+```
